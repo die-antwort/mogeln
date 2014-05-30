@@ -1,0 +1,14 @@
+{
+  "name": "liesimulator",
+  "version": "0.0.1",
+  "description": "lie card game simulator",
+  "main": "simulator.coffee",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Neuling",
+  "license": "ISC",
+  "devDependencies": {
+    "sugar": "^1.4.1"
+  }
+}
