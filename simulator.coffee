@@ -1,69 +1,93 @@
 require "sugar"
-fs = require "fs"
+fs         = require "fs"
+Player     = require "./player"
+Deck       = require "./deck"
+Strategies = require "./strategies"
 
-for lib in ["Deck"]
-  fileName = lib.toLowerCase()
-  GLOBAL[lib] = require("./#{fileName}")[lib]
-
-for player in fs.readdirSync "players"
-  klassName = player.split(".").first().camelize()
-  GLOBAL[klassName] = require("./players/#{player}")[klassName]
-    
+log = (args...) ->
+  console.log.apply null, args
+  
 class Game
   constructor: (args) ->
-    { @deck, players } = args
+    { @deck, @players } = args
     
     @cards     = @deck.cards()
-    @stepCount = 0
     
-    @pool = []
-    @currentColor = 
-    
+    @pile = []
+    @currentSuit = null
     numCards = @cards.length / players.length
     
-    @players = players.map (player) =>
-      instance: new player()
-      name: player.name
-      cards: @cards.splice(0, numCards)
-        
-    @playersCount = Object.keys(@players).length
+    player.setHand @cards.splice(0, numCards) for player in @players
+  
+  logState: ->
+    s = @state()
+    log "\n#{s.currentPlayer.name}’s turn, current suit: #{s.currentSuit}"
+    log "Pile: #{s.pileSize}, " + s.handSizes.map((h) -> "#{h.name}: #{h.size}").join(", ")
     
+    
+  state: ->
+    currentSuit: @currentSuit
+    currentPlayer: @currentPlayer
+    pileSize: @pile.length
+    handSizes: @players.map (p) -> {name: p.name, size: p.hand.length}
+  
+  winner: ->
+    @players.find (p) -> p.hand.length == 0
     
   step: ->
-    
-    player       = @players[@stepCount % @playersCount]
-    otherPlayers = @players.findAll (p) -> p.name != player.name
-    
-    card = player.instance.playCard(player.cards)
-    
-    player.cards.remove(card)
-    
-    @currentColor = card.split(" ").first() if @pool.length == 0
-    
-    @pool.push card
+    @currentPlayer = @players[0]
+    otherPlayers = @players[1..]
+
+    card = @currentPlayer.onTurn.call(null, @currentPlayer.hand)
+    @currentSuit = card.suit if @pile.length == 0
+    # @logState()
+    # log "  #{@currentPlayer.name} plays #{card.name}"
+    @currentPlayer.removeCard(card)
+    @pile.push card
+
     
     for otherPlayer in otherPlayers
-      if (trust = otherPlayer.instance.cardPlayed(card, player.name)) == false
+      if (trust = otherPlayer.onCardPlayed.call(null, card, @currentPlayer.name))
+        # log "    #{otherPlayer.name} trusts"
+      else
+        # log "    #{otherPlayer.name} does not trust"
         
-        if @pool.last().split(" ").first() == @currentColor
-          console.log otherPlayer.name
-          console.log "otherplayer get cards #{@pool.last().split(" ").first()} #{@currentColor}"
-          otherPlayer.cards = otherPlayer.cards.add @pool
+        if @pile.last().suit == @currentSuit
+          # log "      FAIL! #{otherPlayer.name} picks up pile"
+          otherPlayer.pickUp @pile
+          nextPlayer = otherPlayer
         else
-          console.log otherPlayer.name
-          console.log "player get cards #{@pool.last().split(" ").first()} #{@currentColor}"
-          player.cards = player.cards.add @pool
-        
-        @pool = []
+          # log "      WIN! #{@currentPlayer.name} picks up pile"
+          @currentPlayer.pickUp @pile
+          nextPlayer = @currentPlayer
+        @pile = []
+        break
     
-    @stepCount += 1
-    
+    @players.push @players.shift()
+    @players.push @players.shift() while nextPlayer && @players[0] != nextPlayer
     
 
-game = new Game(deck: new Deck(), players: [MoPlayer, BotPlayer])
+players = [
+  # new Player("Truster2", Strategies.trustAlways)
+  # new Player("Truster3", Strategies.trustAlways)
+  # new Player("Truster1", Strategies.trustAlways)
+#  new Player("Nontruster2", Strategies.trustNever)
+  new Player("RandomTruster1", Strategies.trustRandomly)
+  new Player("XXX4", Strategies.trustRandomly2)
+  new Player("RandomTruster2", Strategies.trustRandomly)
+  new Player("RandomTruster3", Strategies.trustRandomly)
+]
 
-console.log game.pool
+simulateGame = ->
+  game = new Game(deck: new Deck(), players: players)
+  game.step() until game.winner()
+  # log "\nFINISHED!!!"
+  # log "Winner: #{game.winner().name}"
+  # game.logState()
+  game.winner()
 
-console.log game.players.map (player) ->
-  name: player.name
-  cards: player.cards.length
+
+winners = (simulateGame() for i in [1..1000])
+log "\n\nSimulation ended"
+players.each (p) ->
+  log "#{p.name}: #{winners.count(p)} wins"

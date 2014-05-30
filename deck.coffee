@@ -1,8 +1,12 @@
-class exports.Deck
-  
+class Card
+  constructor: (@suit, @value) ->
+    @name = "#{@suit}#{@value}"
+    
+
+module.exports = class Deck
   defaults:
-    colors: do -> "spade heart diamond club".split(" ")
-    types: do -> "2 3 4 5 6 7 8 9 10 J Q K A".split(" ")
+    suits: do -> "♠ ♥ ♦ ♣".split(" ")
+    values: do -> "2 3 4 5 6 7 8 9 10 J Q K A".split(" ")
   
   constructor: (options = {}) ->
     @options = Object.merge @defaults, options, true
@@ -11,9 +15,9 @@ class exports.Deck
     @generateCards()
   
   generateCards: ->
-    for color in @options.colors
-      for type in @options.types
-        @_cards.push "#{color} #{type}"
+    for suit in @options.suits
+      for value in @options.values
+        @_cards.push new Card(suit, value)
     
     @shuffleCards()
     
