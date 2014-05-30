@@ -1,7 +1,7 @@
 require "sugar"
 fs = require "fs"
 
-for lib in ["Deck", "Player"]
+for lib in ["Deck"]
   fileName = lib.toLowerCase()
   GLOBAL[lib] = require("./#{fileName}")[lib]
 
@@ -17,7 +17,7 @@ class Game
     @stepCount = 0
     
     @pool = []
-    @currentColor = null
+    @currentColor = 
     
     numCards = @cards.length / players.length
     
@@ -26,7 +26,7 @@ class Game
       name: player.name
       cards: @cards.splice(0, numCards)
         
-    @playersCount = @players.length
+    @playersCount = Object.keys(@players).length
     
     
   step: ->
