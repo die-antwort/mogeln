@@ -87,7 +87,10 @@ simulateGame = ->
   game.winner()
 
 
-winners = (simulateGame() for i in [1..1000])
-log "\n\nSimulation ended"
+winners = (simulateGame() for i in [1..100])
+log "\n\nSimulation ended after #{winners.length} games, winners:"
 players.each (p) ->
-  log "#{p.name}: #{winners.count(p)} wins"
+  wins = winners.count(p) / winners.length * 100.0
+  log "  #{wins.format(1).padLeft(5)}% #{p.name}"
+  
+log "\n"
