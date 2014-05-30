@@ -79,7 +79,7 @@ players = [
 ]
 
 simulateGame = ->
-  game = new Game(deck: new Deck(), players: players)
+  game = new Game(deck: new Deck(), players: players.randomize())
   game.step() until game.winner()
   # log "\nFINISHED!!!"
   # log "Winner: #{game.winner().name}"
