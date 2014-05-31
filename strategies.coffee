@@ -1,33 +1,42 @@
 module.exports =
   
   trustAlways: 
-    onTurn: (cards) ->
+    onTurn: (cards, state) ->
       cards.randomize().first()
     
-    onCardPlayed: (card, player) ->
+    onCardPlayed: (card, player, state) ->
       true
-      
+   
+   trustAlwaysAndAlwaysGiveRightSuit:
+    onTurn: (cards, state) ->
+      suitable = cards.find (c) -> c.suit == state.currentSuit
+      suitable || cards.randomize().first()
+    
+    onCardPlayed: (card, player, state) ->
+      true
+        
       
   trustNever:
-    onTurn: (hand) ->
+    onTurn: (hand, state) ->
       hand.randomize().first()
     
-    onCardPlayed: (card, player) ->
+    onCardPlayed: (card, player, state) ->
       false
 
 
-  trustRandomly:
-    onTurn: (hand) ->
+  trustRandomly80:
+    onTurn: (hand, state) ->
       hand.randomize().first()
     
-    onCardPlayed: (card, player) ->
-      Number.random(0, 10) < 8
+    onCardPlayed: (card, player, state) ->
+      return true if state.pileSize < 8
+      Math.random() <= 0.8
 
 
-  trustRandomly2:
-    onTurn: (hand) ->
+  trustRandomly50:
+    onTurn: (hand, state) ->
       hand.randomize().first()
     
-    onCardPlayed: (card, player) ->
-      Number.random(0, 10) < 5
-
+    onCardPlayed: (card, player, state) ->
+      return true if state.pileSize < 5
+      Math.random() <= 0.8

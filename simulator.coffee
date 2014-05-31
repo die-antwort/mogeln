@@ -19,8 +19,7 @@ class Game
     
     player.setHand @cards.splice(0, numCards) for player in @players
   
-  logState: ->
-    s = @state()
+  logState: (s) ->
     log "\n#{s.currentPlayer.name}’s turn, current suit: #{s.currentSuit}"
     log "Pile: #{s.pileSize}, " + s.handSizes.map((h) -> "#{h.name}: #{h.size}").join(", ")
     
@@ -38,17 +37,18 @@ class Game
     @currentPlayer = @players[0]
     otherPlayers = @players[1..]
 
-    card = @currentPlayer.onTurn.call(null, @currentPlayer.hand)
+    state = @state()
+    card = @currentPlayer.onTurn.call(null, @currentPlayer.hand, state)
     @currentSuit = card.suit if @pile.length == 0
-    # @logState()
+    # @logState(state)
     # log "  #{@currentPlayer.name} plays #{card.name}"
     @currentPlayer.removeCard(card)
     @pile.push card
 
     
     for otherPlayer in otherPlayers
-      if (trust = otherPlayer.onCardPlayed.call(null, card, @currentPlayer.name))
         # log "    #{otherPlayer.name} trusts"
+      if (trust = otherPlayer.onCardPlayed.call(null, card, @currentPlayer.name, state))
       else
         # log "    #{otherPlayer.name} does not trust"
         
@@ -68,14 +68,10 @@ class Game
     
 
 players = [
-  # new Player("Truster2", Strategies.trustAlways)
-  # new Player("Truster3", Strategies.trustAlways)
-  # new Player("Truster1", Strategies.trustAlways)
-#  new Player("Nontruster2", Strategies.trustNever)
-  new Player("RandomTruster1", Strategies.trustRandomly)
-  new Player("XXX4", Strategies.trustRandomly2)
-  new Player("RandomTruster2", Strategies.trustRandomly)
-  new Player("RandomTruster3", Strategies.trustRandomly)
+  new Player("Truster", Strategies.trustAlways)
+  new Player("HonestTruster", Strategies.trustAlwaysAndAlwaysGiveRightSuit)
+  new Player("RandomTruster50%", Strategies.trustRandomly50)
+  new Player("RandomTruster80%", Strategies.trustRandomly80)
 ]
 
 simulateGame = ->
