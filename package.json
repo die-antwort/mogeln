@@ -1,14 +1,16 @@
 {
-  "name": "liesimulator",
+  "name": "mogeln",
   "version": "0.0.1",
-  "description": "lie card game simulator",
+  "description": "mogeln simulator",
   "main": "simulator.coffee",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Neuling",
+  "author": "Neuling, Noniq",
   "license": "ISC",
-  "devDependencies": {
+  "devDependencies": {},
+  "dependencies": {
+    "restify": "^2.8.1",
     "sugar": "^1.4.1"
   }
 }
